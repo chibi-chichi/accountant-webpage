@@ -1,6 +1,88 @@
 [
-  {"id":"sol-fragment","name":"솔 에르다 조각","category":"재료","image":"/images/maple/items/sol-fragment.png","keywords":["솔조각","조각"]},
-  {"id":"restraint-ring","name":"리스트레인트 링","category":"시드링","image":"/images/maple/items/restraint-ring.png","keywords":["리레"]},
-  {"id":"juniper","name":"쥬니퍼베리 씨앗","category":"재료","image":"/images/maple/items/juniper.png","keywords":["쥬니퍼"]},
-  {"id":"eternal","name":"에테르넬 장비","category":"장비","image":"/images/maple/items/eternal.png","keywords":["에테르"]}
+  {
+    "id": "sol-fragment",
+    "name": "솔 에르다 조각",
+    "category": "재료",
+    "image": "/images/maple/items/sol-fragment.png",
+    "keywords": [
+      "솔조각",
+      "조각",
+      "다조"
+    ]
+  },
+  {
+    "id": "restraint-ring",
+    "name": "리스트레인트 링",
+    "category": "시드링",
+    "image": "/images/maple/items/restraint-ring.png",
+    "keywords": [
+      "리레"
+    ]
+  },
+  {
+    "id": "juniper",
+    "name": "쥬니퍼베리 씨앗",
+    "category": "재료",
+    "image": "/images/maple/items/juniper.png",
+    "keywords": [
+      "쥬니퍼"
+    ]
+  },
+  {
+    "id": "eternal",
+    "name": "소울 에테르",
+    "category": "소비",
+    "image": "/images/maple/items/soul-eter.png",
+    "keywords": [
+      "에테르"
+    ]
+  },
+  {
+    "id": "continuous-ring",
+    "name": "컨티뉴어스 링",
+    "category": "시드링",
+    "image": "/images/maple/items/continuous-ring.png",
+    "keywords": [
+      "컨티"
+    ]
+  },
+  {
+    "id": "exp-coupon-50",
+    "name": "추가 경험치 50% 쿠폰",
+    "category": "소비",
+    "image": "/images/maple/items/exp-coupon.png",
+    "keywords": [
+      "추가"
+    ]
+  },
+  {
+    "id": "medal-of-honor",
+    "name": "대형 보스 명예의 훈장",
+    "category": "소비",
+    "image": "/images/maple/items/medal-of-honor.png",
+    "keywords": [
+      "대형",
+      "명훈"
+    ]
+  },
+  {
+    "id": "small-exp-nostrum",
+    "name": "소형 경험 축적의 비약",
+    "category": "소비",
+    "image": "/images/maple/items/small-exp-nostrum.png",
+    "keywords": [
+      "소형",
+      "경축"
+    ]
+  },
+  {
+    "id": "small-wealth-nostrum",
+    "name": "소형 재물 획득의 비약",
+    "category": "소비",
+    "image": "/images/maple/items/small-wealth-nostrum.png",
+    "keywords": [
+      "소형",
+      "재획"
+    ]
+  }
 ]

@@ -1,114 +1,450 @@
 [
   {
-    "id": "seren-노말",
-    "name": "세렌",
-    "difficulty": "노말",
-    "crystalPrice": 1000009,
-    "image": "/images/maple/bosses/seren.png"
-  },
-  {
-    "id": "seren-하드",
-    "name": "세렌",
-    "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/seren.png"
-  },
-  {
-    "id": "seren-익스트림",
-    "name": "세렌",
+    "id": "baldrix-익스트림",
+    "name": "발드릭스",
     "difficulty": "익스트림",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/seren.png"
+    "crystalPrice": 9600000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "kalos-이지",
-    "name": "칼로스",
-    "difficulty": "이지",
-    "crystalPrice": 1110,
-    "image": "/images/maple/bosses/kalos.png"
-  },
-  {
-    "id": "kalos-노말",
-    "name": "칼로스",
-    "difficulty": "노말",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/kalos.png"
-  },
-  {
-    "id": "kalos-카오스",
-    "name": "칼로스",
-    "difficulty": "카오스",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/kalos.png"
-  },
-  {
-    "id": "kalos-익스트림",
-    "name": "칼로스",
+    "id": "limbo-익스트림",
+    "name": "림보",
     "difficulty": "익스트림",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/kalos.png"
+    "crystalPrice": 7500000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "adversary-이지",
-    "name": "대적자",
-    "difficulty": "이지",
-    "crystalPrice": 10000,
-    "image": "/images/maple/bosses/adversary.png"
-  },
-  {
-    "id": "adversary-노말",
-    "name": "대적자",
-    "difficulty": "노말",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/adversary.png"
-  },
-  {
-    "id": "adversary-하드",
-    "name": "대적자",
+    "id": "jupiter-하드",
+    "name": "유피테르",
     "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/adversary.png"
+    "crystalPrice": 5387000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kaling-익스트림",
+    "name": "카링",
+    "difficulty": "익스트림",
+    "crystalPrice": 4845000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
     "id": "adversary-익스트림",
     "name": "대적자",
     "difficulty": "익스트림",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/adversary.png"
+    "crystalPrice": 4712000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "zakum",
-    "name": "자쿰",
+    "id": "kalos-익스트림",
+    "name": "칼로스",
+    "difficulty": "익스트림",
+    "crystalPrice": 4104000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "baldrix-하드",
+    "name": "발드릭스",
+    "difficulty": "하드",
+    "crystalPrice": 3078000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "bellona-하드",
+    "name": "벨로나",
+    "difficulty": "하드",
+    "crystalPrice": 2950000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "brilliant-star-하드",
+    "name": "찬란한 흉성",
+    "difficulty": "하드",
+    "crystalPrice": 2678000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "limbo-하드",
+    "name": "림보",
+    "difficulty": "하드",
+    "crystalPrice": 2385000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "seren-익스트림",
+    "name": "세렌",
+    "difficulty": "익스트림",
+    "crystalPrice": 1840000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "jupiter-노말",
+    "name": "유피테르",
+    "difficulty": "노말",
+    "crystalPrice": 1560000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kaling-하드",
+    "name": "카링",
+    "difficulty": "하드",
+    "crystalPrice": 1560000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "adversary-하드",
+    "name": "대적자",
+    "difficulty": "하드",
+    "crystalPrice": 1390000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "baldrix-노말",
+    "name": "발드릭스",
+    "difficulty": "노말",
+    "crystalPrice": 1320000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kalos-카오스",
+    "name": "칼로스",
     "difficulty": "카오스",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/zakum.png"
+    "crystalPrice": 1230000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "lotus",
+    "id": "limbo-노말",
+    "name": "림보",
+    "difficulty": "노말",
+    "crystalPrice": 995000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "bellona-노말",
+    "name": "벨로나",
+    "difficulty": "노말",
+    "crystalPrice": 824000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kaling-노말",
+    "name": "카링",
+    "difficulty": "노말",
+    "crystalPrice": 593000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "brilliant-star-노말",
+    "name": "찬란한 흉성",
+    "difficulty": "노말",
+    "crystalPrice": 576000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lotus-익스트림",
     "name": "스우",
-    "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/lotus.png"
+    "difficulty": "익스트림",
+    "crystalPrice": 545000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "damien",
-    "name": "데미안",
-    "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/damien.png"
+    "id": "adversary-노말",
+    "name": "대적자",
+    "difficulty": "노말",
+    "crystalPrice": 532000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
-    "id": "lucid",
-    "name": "루시드",
+    "id": "kalos-노말",
+    "name": "칼로스",
+    "difficulty": "노말",
+    "crystalPrice": 479000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "bellona-이지",
+    "name": "벨로나",
+    "difficulty": "이지",
+    "crystalPrice": 396000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kaling-이지",
+    "name": "카링",
+    "difficulty": "이지",
+    "crystalPrice": 320000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "seren-하드",
+    "name": "세렌",
     "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/lucid.png"
+    "crystalPrice": 302000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "adversary-이지",
+    "name": "대적자",
+    "difficulty": "이지",
+    "crystalPrice": 261000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "kalos-이지",
+    "name": "칼로스",
+    "difficulty": "이지",
+    "crystalPrice": 238000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "seren-노말",
+    "name": "세렌",
+    "difficulty": "노말",
+    "crystalPrice": 167000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "verus-hilla-하드",
+    "name": "진 힐라",
+    "difficulty": "하드",
+    "crystalPrice": 100000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "darknell-하드",
+    "name": "듄켈",
+    "difficulty": "하드",
+    "crystalPrice": 89600000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
   },
   {
     "id": "will",
     "name": "윌",
     "difficulty": "하드",
-    "crystalPrice": 0,
-    "image": "/images/maple/bosses/will.png"
+    "crystalPrice": 73200000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "guardian-angel-slime-카오스",
+    "name": "가디언 엔젤 슬라임",
+    "difficulty": "카오스",
+    "crystalPrice": 71300000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "verus-hilla-노말",
+    "name": "진 힐라",
+    "difficulty": "노말",
+    "crystalPrice": 67600000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "gloom-카오스",
+    "name": "더스크",
+    "difficulty": "카오스",
+    "crystalPrice": 66300000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lucid",
+    "name": "루시드",
+    "difficulty": "하드",
+    "crystalPrice": 59700000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lotus",
+    "name": "스우",
+    "difficulty": "하드",
+    "crystalPrice": 48900000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "damien",
+    "name": "데미안",
+    "difficulty": "하드",
+    "crystalPrice": 46400000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "darknell-노말",
+    "name": "듄켈",
+    "difficulty": "노말",
+    "crystalPrice": 23700000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "gloom-노말",
+    "name": "더스크",
+    "difficulty": "노말",
+    "crystalPrice": 22000000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "will-노말",
+    "name": "윌",
+    "difficulty": "노말",
+    "crystalPrice": 20500000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lucid-노말",
+    "name": "루시드",
+    "difficulty": "노말",
+    "crystalPrice": 17800000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "will-이지",
+    "name": "윌",
+    "difficulty": "이지",
+    "crystalPrice": 16100000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lucid-이지",
+    "name": "루시드",
+    "difficulty": "이지",
+    "crystalPrice": 14900000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "guardian-angel-slime-노말",
+    "name": "가디언 엔젤 슬라임",
+    "difficulty": "노말",
+    "crystalPrice": 12700000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "damien-노말",
+    "name": "데미안",
+    "difficulty": "노말",
+    "crystalPrice": 8750000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "lotus-노말",
+    "name": "스우",
+    "difficulty": "노말",
+    "crystalPrice": 8350000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "papulatus-카오스",
+    "name": "파풀라투스",
+    "difficulty": "카오스",
+    "crystalPrice": 6550000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "vellum-카오스",
+    "name": "벨룸",
+    "difficulty": "카오스",
+    "crystalPrice": 4640000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "magnus-하드",
+    "name": "매그너스",
+    "difficulty": "하드",
+    "crystalPrice": 4280000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "pierre-카오스",
+    "name": "피에르",
+    "difficulty": "카오스",
+    "crystalPrice": 4080000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "von-bon-카오스",
+    "name": "반반",
+    "difficulty": "카오스",
+    "crystalPrice": 4070000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "bloody-queen-카오스",
+    "name": "블러디퀸",
+    "difficulty": "카오스",
+    "crystalPrice": 4070000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "zakum",
+    "name": "자쿰",
+    "difficulty": "카오스",
+    "crystalPrice": 4040000,
+    "image": "/images/maple/bosses/weekly-crystal-stone.png",
+    "period": "weekly"
+  },
+  {
+    "id": "black-mage-익스트림",
+    "name": "검은 마법사",
+    "difficulty": "익스트림",
+    "crystalPrice": 5680000000,
+    "image": "/images/maple/bosses/monthly-crystal-stone.png",
+    "period": "monthly"
+  },
+  {
+    "id": "black-mage-하드",
+    "name": "검은 마법사",
+    "difficulty": "하드",
+    "crystalPrice": 465000000,
+    "image": "/images/maple/bosses/monthly-crystal-stone.png",
+    "period": "monthly"
   }
 ]

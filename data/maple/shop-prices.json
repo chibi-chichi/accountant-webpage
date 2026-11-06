@@ -1,3 +1,26 @@
 [
-  {"id":"sample-npc-item","name":"잡화상인 아이템 예시","unitPrice":0,"image":"/images/maple/items/sample-npc-item.png"}
+  {
+    "id": "power-elixir",
+    "name": "잡화상인 아이템 예시",
+    "unitPrice": 2500,
+    "image": "/images/maple/items/power-elixir.png"
+  },
+  {
+    "id": "elixir",
+    "name": "잡화상인 아이템 예시",
+    "unitPrice": 1000,
+    "image": "/images/maple/items/elixir.png"
+  },
+  {
+    "id": "reindeer-milk",
+    "name": "잡화상인 아이템 예시",
+    "unitPrice": 2750,
+    "image": "/images/maple/items/reindeer-milk.png"
+  },
+  {
+    "id": "dawn-dew",
+    "name": "잡화상인 아이템 예시",
+    "unitPrice": 5100,
+    "image": "/images/maple/items/dawn-dew.png"
+  }
 ]

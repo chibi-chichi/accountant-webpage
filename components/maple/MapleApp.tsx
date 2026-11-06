@@ -82,9 +82,22 @@ function transactionGroup(rows: Transaction[]) {
   }).sort((a,b) => b.row.date.localeCompare(a.row.date));
 }
 function Trend({rows, opening}:{rows:Transaction[]; opening:number}) {
-  const days = Array.from({length:7}, (_,i) => { const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-(6-i)); return d.toLocaleDateString("en-CA"); });
+  // Read the current date after hydration, not during Next.js prerender.
+  const [today, setToday] = useState<string | null>(null);
+  useEffect(() => { setToday(dateNow()); }, []);
+  const days = useMemo(() => {
+    if (!today) return [];
+    const [year, month, day] = today.split("-").map(Number);
+    const end = new Date(year, month - 1, day, 12);
+    return Array.from({length:7}, (_,i) => {
+      const d = new Date(end);
+      d.setDate(d.getDate() - (6-i));
+      return d.toLocaleDateString("en-CA");
+    });
+  }, [today]);
   const series = days.map(day => opening + rows.filter(r => r.currency === "meso" && r.date <= day).reduce((sum,r)=>sum+(r.direction === "income"?r.amount:-r.amount),0));
-  const low = Math.min(...series), high = Math.max(...series);
+  const low = series.length ? Math.min(...series) : opening;
+  const high = series.length ? Math.max(...series) : opening;
   const plot = (v:number,i:number) => `${15+i*60},${105-((v-low)/(high-low||1))*78}`;
   return <><svg viewBox="0 0 390 125" role="img" aria-label="최근 7일 메소 잔고" className="h-36 w-full">
     {[27,66,105].map(y => <line key={y} x1="15" y1={y} x2="375" y2={y} stroke="#e2e8f0" strokeDasharray="4 5"/>)}
@@ -229,7 +242,8 @@ function SettingsModal({settings,onSave,onClose,onPresetIncome}:{settings:Settin
 function EntryModal({current,related,settings,setSettings,onSave,onClose}:{current?:Transaction;related:Transaction[];settings:Settings;setSettings:(s:Settings)=>void;onSave:(next:Transaction[])=>void;onClose:()=>void}) {
   const [direction,setDirection]=useState<Direction>(current?.direction??"income");
   const [category,setCategory]=useState<Category>(()=>current?.category==="exchange"?"other":current?.category??"boss");
-  const [date,setDate]=useState(current?.date??dateNow());
+  const [date,setDate]=useState(current?.date??"");
+  useEffect(() => { if (!current?.date) setDate(dateNow()); }, [current?.date]);
   const [name,setName]=useState(current?.name??"");
   const [memo,setMemo]=useState(current?.memo??"");
   const [quantity,setQuantity]=useState(1);
@@ -252,7 +266,15 @@ function EntryModal({current,related,settings,setSettings,onSave,onClose}:{curre
   const npcPrice=npc?.unitPrice && npc.unitPrice>0?npc.unitPrice:price;
   const auction=auctionPayout(price,quantity,5000,settings.mvpSilver,pcBang);
   const hunt=huntingReward(price,hunting);
-  const matches=itemsData.filter(x=>name.trim()&&(x.name.includes(name)||x.keywords.some(k=>k.includes(name)))).slice(0,6);
+  const matches = category === "npc"
+    ? shopData.filter(x => name.trim() && x.name.toLocaleLowerCase().includes(name.trim().toLocaleLowerCase())).slice(0, 8)
+    : itemsData.filter(x => name.trim() && (x.name.toLocaleLowerCase().includes(name.trim().toLocaleLowerCase()) || x.keywords.some(k => k.toLocaleLowerCase().includes(name.trim().toLocaleLowerCase())))).slice(0, 8);
+  const chooseSuggestion = (value: string) => {
+    setName(value);
+    setSuggest(false);
+    setPrice(0);
+  };
+  const npcTotal = npcPrice * quantity;
   const bossTotal=choices.reduce((s,c)=>{const b=bossesData.find(x=>x.id===c.bossId);return s+(b?Math.floor(b.crystalPrice/(c.party||1)):0);},0);
   function changeDirection(next:Direction){setDirection(next);setCategory(next==="income"?"boss":"purchase");setName("");setPrice(0);setError("");}
   function submit(){
@@ -281,10 +303,10 @@ function EntryModal({current,related,settings,setSettings,onSave,onClose}:{curre
     <div className="grid gap-4 sm:grid-cols-2"><Field label="Account Type"><select className={input} value={category} onChange={e=>{setCategory(e.target.value as Category);setPrice(0);setName("");setError("");}}>{options.map(c=><option key={c} value={c}>{category===c&&c==="other"&&direction==="expense"?"기타 지출":category===c&&c==="other"?"기타 수입":CATEGORY_LABELS[c]}</option>)}</select></Field><Field label="거래 날짜"><input type="date" className={input} value={date} onChange={e=>setDate(e.target.value)}/></Field>
       {category==="boss"&&<div className="space-y-3 sm:col-span-2"><Field label="캐릭터 프리셋 불러오기 (선택)"><select value={selectedPreset} onChange={e=>{setSelectedPreset(e.target.value);const p=(settings.presets??[]).find(x=>x.id===e.target.value);if(p)setChoices(p.entries);}} className={input}><option value="">직접 선택</option>{(settings.presets??[]).map(p=><option key={p.id} value={p.id}>{p.characterName}</option>)}</select></Field><BossSelector choices={choices} onChange={setChoices}/><div className="rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700">선택 {choices.length}개 · 예상 총 수익 {fmt(bossTotal)} 메소</div><p className="text-xs text-slate-500">결정석 가격은 data/maple/bosses.json에서 관리합니다. 같은 보스는 난이도 하나만 선택할 수 있어요.</p></div>}
       {category==="hunting"&&<><NumberField label="순수 메소 획득량 (메획 적용 전)" value={price} onChange={setPrice}/><div className="sm:col-span-2 grid grid-cols-3 gap-2"><NumberField label="장비 메획 %" value={hunting.equipment} onChange={v=>setHunting(p=>({...p,equipment:v}))} max={100} unit={false}/><NumberField label="어빌리티 %" value={hunting.ability} onChange={v=>setHunting(p=>({...p,ability:v}))} max={20} unit={false}/><NumberField label="유니온 %" value={hunting.union} onChange={v=>setHunting(p=>({...p,union:v}))} max={15} unit={false}/></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hunting.wealthPotion} onChange={e=>setHunting(p=>({...p,wealthPotion:e.target.checked}))}/> 재물 획득의 비약 +20%</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={hunting.unionWealth} onChange={e=>setHunting(p=>({...p,unionWealth:e.target.checked}))}/> 유니온의 부 +50%</label><div className="rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700 sm:col-span-2">메획 +{hunt.rate}% · 총 {fmt(hunt.total)} 메소</div></>}
-      {(category==="auction"||category==="npc"||category==="purchase"||category==="other")&&<div className="relative sm:col-span-2"><Field label={category==="other"?"이름 (선택)":"아이템 이름"}><input className={input} value={name} onChange={e=>{setName(e.target.value);setSuggest(true);setPrice(0);}} placeholder="이름 입력" onKeyDown={e=>{if(e.key==="Tab"&&matches.length&&suggest){e.preventDefault();setName(matches[0].name);setSuggest(false);}}}/></Field>{suggest&&matches.length>0&&<div className="absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white p-1 shadow-lg">{matches.map(m=><button type="button" key={m.id} onClick={()=>{setName(m.name);setSuggest(false);}} className="block w-full rounded-lg p-2 text-left text-sm hover:bg-slate-100">{m.name}</button>)}</div>}</div>}
+      {(category==="auction"||category==="npc"||category==="purchase"||category==="other")&&<div className="relative sm:col-span-2"><Field label={category==="other"?"이름 (선택)":"아이템 이름"}><input className={input} value={name} onChange={e=>{setName(e.target.value);setSuggest(true);setPrice(0);}} placeholder={category==="npc"?"잡화상인 아이템 입력 후 Tab으로 자동완성":"이름 입력"} autoComplete="off" onKeyDown={e=>{if((e.key==="Tab"||e.key==="Enter")&&matches.length&&suggest){e.preventDefault();chooseSuggestion(matches[0].name);}else if(e.key==="Escape")setSuggest(false);}}/></Field>{suggest&&matches.length>0&&<div className="absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white p-1 shadow-lg">{matches.map(m=><button type="button" key={m.id} onClick={()=>chooseSuggestion(m.name)} className="flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm hover:bg-slate-100">{"image" in m && m.image ? <img src={m.image} alt="" className="h-8 w-8 shrink-0 rounded-lg object-contain" onError={e=>{e.currentTarget.style.display="none";}}/> : null}<span>{m.name}</span>{category==="npc" && "unitPrice" in m && <span className="ml-auto text-xs text-slate-500">{fmt(m.unitPrice)} 메소</span>}</button>)}</div>}</div>}
       {category==="enhancement"&&<div className="sm:col-span-2"><Field label="강화 종류"><select className={input} value={enhanceType} onChange={e=>setEnhanceType(e.target.value)}>{ENHANCEMENT_TYPES.map(t=><option key={t} value={t}>{t}</option>)}</select></Field></div>}
       {category!=="boss"&&category!=="hunting"&&<><NumberField label={category==="auction"||category==="npc"?"개당 가격":"가격"} value={category==="npc"&&npc?.unitPrice&&npc.unitPrice>0?npc.unitPrice:price} onChange={setPrice}/>{category!=="enhancement"&&category!=="other"&&<NumberField label="수량" value={quantity} onChange={setQuantity} min={1} unit={false}/>}</>}
-      {category==="npc"&&<div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 sm:col-span-2">JSON에 등록된 아이템은 고정 개당 가격이 적용됩니다. 리스트에 없거나 JSON 가격이 0인 아이템은 가격을 직접 입력할 수 있어요.</div>}
+      {category==="npc"&&<div aria-live="polite" className="space-y-1 rounded-xl bg-blue-50 p-3 text-sm sm:col-span-2"><div className="font-semibold text-blue-700">예상 판매 금액: {valid(npcTotal) ? fmt(npcTotal) : "금액 확인 필요"} 메소</div><div className="text-xs text-slate-600">{npc && npc.unitPrice > 0 ? "JSON에 등록된 개당 가격이 자동 적용됐습니다." : "JSON에 없는 아이템은 개당 가격을 직접 입력할 수 있습니다."} 개당 가격 × 수량, 수수료 없음</div></div>}
       {category==="auction"&&<><div className="rounded-xl bg-slate-50 p-3 text-sm">등록 수수료 <strong>5,000 메소 (고정)</strong></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={pcBang} onChange={e=>setPcBang(e.target.checked)}/> 이번 거래 PC방 적용</label><div className="rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700 sm:col-span-2">판매 수수료 {auction.feeRate*100}% · 등록 수수료 5,000 메소 · 순수익 {fmt(auction.net)} 메소</div></>}
       <div className="sm:col-span-2"><Field label="메모 (선택)"><textarea className={input} rows={2} value={memo} onChange={e=>setMemo(e.target.value)}/></Field></div>
     </div>

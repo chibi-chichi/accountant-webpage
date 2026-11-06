@@ -6,9 +6,11 @@ import itemsData from "@/data/maple/items.json";
 import shopData from "@/data/maple/shop-prices.json";
 import {
   auctionPayout, balance, CATEGORY_LABELS, DEFAULT_SETTINGS, ENHANCEMENT_TYPES,
-  fmt, huntingReward, koreanAmount, makeId,
+  fmt, huntingReward, koreanAmount,
   type BossPreset, type Category, type Direction, type Settings, type Transaction,
 } from "@/lib/maple/calculations";
+import { createClient } from "@/lib/supabase/client";
+import { loadMaple, getMapleUser, saveMapleSettings, syncMaplePresets, saveMapleTransactions, deleteMapleTransactions, readLegacySnapshot, importLegacy, uuid, type LegacySnapshot } from "@/lib/maple/cloud";
 
 const KEY = "asset-manager-maple-demo-v1"; // Keep v1 storage key to preserve demo history.
 const card = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
@@ -123,10 +125,10 @@ function BossBreakdown({members}:{members:Transaction[]}) {
   </div>;
 }
 function groupedBossRows(choices:BossChoice[],date:string,memo:string):Transaction[] {
-  const linkedId = makeId();
+  const linkedId = uuid();
   return choices.map(choice=>{
     const boss = bossesData.find(b=>b.id===choice.bossId)!;
-    return { id:makeId(),linkedId,date,category:"boss",currency:"meso",direction:"income",amount:Math.floor(boss.crystalPrice/choice.party),name:`${boss.name} (${boss.difficulty}) 보스 결정석`,memo:`파티 ${choice.party}명${memo ? ` · ${memo}`:""}` };
+    return { id:uuid(),linkedId,date,category:"boss",currency:"meso",direction:"income",amount:Math.floor(boss.crystalPrice/choice.party),name:`${boss.name} (${boss.difficulty}) 보스 결정석`,memo:`파티 ${choice.party}명${memo ? ` · ${memo}`:""}` };
   });
 }
 function validateBosses(choices:BossChoice[]) {
@@ -140,7 +142,60 @@ function validateBosses(choices:BossChoice[]) {
 }
 
 export default function MapleApp() {
-  const [ready,setReady] = useState(false);
+  const [loading,setLoading] = useState(true);
+  const [busy,setBusy] = useState(false);
+  const [cloudError,setCloudError] = useState("");
+  const [legacy,setLegacy] = useState<LegacySnapshot|null>(null);
+  const [userId,setUserId] = useState<string|null>(null);
+  const reload = async () => {
+    const payload=await loadMaple();
+    setRows(payload.rows);setSettings(payload.settings);
+  };
+  useEffect(()=>{
+    let active=true;
+    const client=createClient();
+    const refresh=async()=>{
+      try {
+        const id=await getMapleUser();
+        if(!active)return;
+        setUserId(id);
+        const payload=await loadMaple();
+        if(active){setRows(payload.rows);setSettings(payload.settings);setCloudError("");}
+      }catch(e){if(active){setUserId(null);setCloudError(e instanceof Error?e.message:String(e));}}
+      finally{if(active){setLoading(false);}}
+    };
+    setLegacy(readLegacySnapshot());
+    void refresh();
+    // Refresh on return from another tab/device; true instant sync is a later feature.
+    const onFocus=()=>{if(active)void refresh();};
+    window.addEventListener("focus",onFocus);
+    const {data}=client.auth.onAuthStateChange(()=>{if(active)void refresh();});
+    return ()=>{active=false;window.removeEventListener("focus",onFocus);data.subscription.unsubscribe();};
+  },[]);
+  const guarded=async(task:()=>Promise<void>)=>{
+    if(busy)throw new Error("이전 작업이 진행 중입니다.");
+    setBusy(true);setCloudError("");
+    try{await task();}
+    catch(e){const msg=e instanceof Error?e.message:String(e);setCloudError(msg);throw e;}
+    finally{setBusy(false);}
+  };
+  const saveSettings=async(next:Settings)=>guarded(async()=>{
+    await saveMapleSettings(next);
+    await syncMaplePresets(next.presets??[]);
+    await reload();
+  });
+  const importOld=async()=>{
+    if(!legacy)return;
+    if(!confirm("이 브라우저의 메소 거래와 프리셋을 Supabase로 가져올까요? 기존 브라우저 자료는 유지됩니다. 클라우드가 비어 있을 때만 가능합니다."))return;
+    try{await guarded(async()=>{await importLegacy(legacy);await reload();});alert("가져오기가 완료됐습니다. 원본 localStorage는 유지됩니다.");}
+    catch(e){alert(e instanceof Error?e.message:String(e));}
+  };
+  const backupOld=()=>{
+    if(!legacy)return;
+    const blob=new Blob([JSON.stringify(legacy,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download="maple-local-backup.json";a.click();URL.revokeObjectURL(url);
+  };
   const [rows,setRows] = useState<Transaction[]>([]);
   const [settings,setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [screen,setScreen] = useState<Screen>("dashboard");
@@ -151,11 +206,6 @@ export default function MapleApp() {
   const [entryOpen,setEntryOpen] = useState(false);
   const [settingsOpen,setSettingsOpen] = useState(false);
   const [expanded,setExpanded] = useState<string[]>([]);
-  useEffect(()=>{
-    try { const stored = localStorage.getItem(KEY); if(stored) {const parsed=JSON.parse(stored) as {rows?:Transaction[];settings?:Partial<Settings>}; if(Array.isArray(parsed.rows))setRows(parsed.rows);if(parsed.settings)setSettings({...DEFAULT_SETTINGS,...parsed.settings,presets:parsed.settings.presets??[]});} }catch{/* Demo data could be corrupt */}
-    setReady(true);
-  },[]);
-  useEffect(()=>{if(ready)localStorage.setItem(KEY,JSON.stringify({rows,settings}));},[rows,settings,ready]);
   // Previous point history is kept in localStorage, but entirely hidden in the meso-only view.
   const mesoRows = rows.filter(r=>r.currency==="meso" && r.category!=="exchange" && r.category!=="cash");
   const total = balance("meso",mesoRows,settings);
@@ -165,22 +215,23 @@ export default function MapleApp() {
   const toggle = (id:string) => setExpanded(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const openAdd = () => {setEditing(null);setEntryOpen(true);};
   const openEdit = (id:string) => {setEditing(id);setEntryOpen(true);};
-  const replace = (next:Transaction[]) => {
-    const old = rows.find(r=>r.id===editing);
-    setRows(prev=>[...prev.filter(r=>!old || (r.id!==old.id && (!old.linkedId||r.linkedId!==old.linkedId))),...next]);
-    setEntryOpen(false);setEditing(null);
-  };
-  const remove = (id:string) => {
+  const replace = async (next:Transaction[]) => guarded(async()=>{
+    const old=rows.find(r=>r.id===editing);
+    await saveMapleTransactions(next,old);
+    await reload();setEntryOpen(false);setEditing(null);
+  });
+  const remove = async (id:string) => {
     const old=rows.find(r=>r.id===id);
-    if(!old||!confirm("이 거래를 삭제할까요? 같은 묶음에 속한 보스 기록도 함께 삭제됩니다."))return;
-    setRows(prev=>prev.filter(r=>r.id!==id && (!old.linkedId||r.linkedId!==old.linkedId)));
+    if(!old||!confirm("이 거래를 삭제할까요? 같은 묶음의 보스 기록도 삭제됩니다."))return;
+    try{await guarded(async()=>{await deleteMapleTransactions(old);await reload();});}
+    catch(e){alert(e instanceof Error?e.message:String(e));}
   };
-  const savePresetIncome = (preset:BossPreset) => {
+  const savePresetIncome = async (preset:BossPreset) => {
     const reason=validateBosses(preset.entries);
     if(reason){alert(reason);return;}
     if(!confirm(`${preset.characterName}의 보스 수익 ${preset.entries.length}건을 오늘 날짜로 등록할까요?`))return;
-    setRows(prev=>[...prev,...groupedBossRows(preset.entries,dateNow(),`프리셋: ${preset.characterName}`)]);
-    setSettingsOpen(false);
+    try{await guarded(async()=>{await saveMapleTransactions(groupedBossRows(preset.entries,dateNow(),`프리셋: ${preset.characterName}`));await reload();});setSettingsOpen(false);}
+    catch(e){alert(e instanceof Error?e.message:String(e));}
   };
   const renderLine = ({row,members}:{row:Transaction;members:Transaction[]}) => {
     const key=row.linkedId??row.id;
@@ -193,6 +244,8 @@ export default function MapleApp() {
       {isGroup && expanded.includes(key)&&<BossBreakdown members={members}/>}
     </div>;
   };
+  if(loading)return <div className="min-h-screen bg-slate-50 p-8 text-slate-700">Google 로그인과 Supabase 데이터를 확인하는 중...</div>;
+  if(!userId)return <div className="min-h-screen bg-slate-50 p-8"><p className="mb-4 text-red-700">{cloudError||"로그인이 필요합니다."}</p><a href="/" className="text-blue-600 underline">메인 페이지에서 로그인</a></div>;
   return <div className="min-h-screen bg-slate-50 text-slate-900">
     <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 font-black text-orange-700">M</div><div><strong>Asset Manager</strong><div className="text-xs text-slate-500">메이플스토리 가계부</div></div></div><div className="flex gap-2"><button type="button" className={`${button} bg-slate-100 text-sm`} onClick={()=>setSettingsOpen(true)}>⚙ 설정</button><button type="button" className={`${button} bg-blue-600 text-sm text-white`} onClick={openAdd}>＋ 거래 입력</button></div></div></header>
     <main className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6">
@@ -205,14 +258,14 @@ export default function MapleApp() {
         <div className="flex flex-wrap gap-2"><button type="button" onClick={()=>setFilter(p=>p==="all"?"income":p==="income"?"expense":"all")} className={`${button} border border-slate-200 bg-white text-sm`}>수익/소비: {filter==="all"?"전체":filter==="income"?"수익":"소비"} ↻</button><select aria-label="Account Type 필터" value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)} className={`${input} w-auto text-sm`}><option value="all">모든 카테고리</option>{displayCategories.map(c=><option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}</select><input className={`${input} min-w-40 flex-1 text-sm`} value={query} onChange={e=>setQuery(e.target.value)} aria-label="검색" placeholder="이름 또는 메모 검색"/></div>
         <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-sm"><thead className="bg-slate-100 text-left"><tr><th className="rounded-l-xl px-3 py-3">Profit/Spent</th><th className="px-3 py-3">Name</th><th className="px-3 py-3">Account Type</th><th className="px-3 py-3">Date</th><th className="px-3 py-3 text-right">Meso</th><th className="rounded-r-xl px-3 py-3">Action</th></tr></thead><tbody>{listed.map(({row,members})=>{const key=row.linkedId??row.id;const group=row.category==="boss"&&members.length>1;return <tr key={key}><td colSpan={6} className="p-0"><table className="w-full table-fixed"><tbody><tr className="border-b border-slate-100"><td className={`w-[15%] px-3 py-3 font-bold ${row.direction==="income"?"text-blue-600":"text-red-600"}`}>{row.direction==="income"?"Profit":"Spent"}</td><td className="w-[23%] px-3 py-3"><div className="flex min-w-0 items-center gap-2"><TransactionIcon row={row}/><div className="min-w-0">{group?<button type="button" onClick={()=>toggle(key)} className="break-words text-left font-semibold text-blue-700 underline">{row.name} {expanded.includes(key)?"▴":"▾"}</button>:<span className="break-words">{row.name}</span>}<small className="block truncate text-slate-400">{row.memo}</small></div></div></td><td className="w-[17%] px-3 py-3">{CATEGORY_LABELS[row.category]??row.category}</td><td className="w-[14%] px-3 py-3">{row.date}</td><td className="w-[17%] px-3 py-3 text-right font-semibold">{row.direction==="income"?"+":"-"}{fmt(row.amount)}</td><td className="w-[14%] px-3 py-3"><button type="button" onClick={()=>openEdit(row.id)} className="mr-2 text-blue-600">수정</button><button type="button" onClick={()=>remove(row.id)} className="text-red-600">삭제</button></td></tr>{group&&expanded.includes(key)&&<tr><td colSpan={6} className="px-3 pb-3"><BossBreakdown members={members}/></td></tr>}</tbody></table></td></tr>})}</tbody></table>{!listed.length&&<p className="p-8 text-center text-slate-500">조건에 맞는 거래가 없어요.</p>}</div>
       </section>}
-      <p className="text-center text-xs text-amber-700">개발용 프로토타입: 현재 브라우저에만 저장됩니다. Supabase 동기화는 아직 연결되지 않았어요. 이전 메포·메소마켓 기록은 삭제하지 않고 현재 메소 전용 집계에서 제외합니다.</p>
+      <p className="text-center text-xs text-amber-700">개발용 프로토타입: 현재 거래와 설정은 Google 계정별 Supabase에 저장됩니다. 예전 메포·메소마켓 기록은 가져오기에서 제외하고 브라우저에 남겨둡니다.</p>
     </main>
-    {entryOpen&&<EntryModal key={editing??"new"} current={rows.find(r=>r.id===editing)} related={rows.filter(r=>r.linkedId&&r.linkedId===rows.find(x=>x.id===editing)?.linkedId)} settings={settings} setSettings={setSettings} onSave={replace} onClose={()=>setEntryOpen(false)}/>}
-    {settingsOpen&&<SettingsModal settings={settings} onSave={setSettings} onClose={()=>setSettingsOpen(false)} onPresetIncome={savePresetIncome}/>}
+    {entryOpen&&<EntryModal key={editing??"new"} current={rows.find(r=>r.id===editing)} related={rows.filter(r=>r.linkedId&&r.linkedId===rows.find(x=>x.id===editing)?.linkedId)} settings={settings} setSettings={async s=>{await saveMapleSettings(s);setSettings(s);}} onSave={replace} onClose={()=>setEntryOpen(false)}/>}
+    {settingsOpen&&<SettingsModal settings={settings} onSave={saveSettings} onClose={()=>setSettingsOpen(false)} onPresetIncome={savePresetIncome}/>}
   </div>;
 }
 
-function SettingsModal({settings,onSave,onClose,onPresetIncome}:{settings:Settings;onSave:(v:Settings)=>void;onClose:()=>void;onPresetIncome:(p:BossPreset)=>void}) {
+function SettingsModal({settings,onSave,onClose,onPresetIncome}:{settings:Settings;onSave:(v:Settings)=>Promise<void>;onClose:()=>void;onPresetIncome:(p:BossPreset)=>Promise<void>}) {
   const [draft,setDraft]=useState<Settings>({...settings,presets:settings.presets??[]});
   const [tab,setTab]=useState<"general"|"preset">("general");
   const [character,setCharacter]=useState("");
@@ -221,25 +274,30 @@ function SettingsModal({settings,onSave,onClose,onPresetIncome}:{settings:Settin
   const [error,setError]=useState("");
   const presets=draft.presets??[];
   const reset=()=>{setEditPresetId(null);setCharacter("");setChoices([]);setError("");};
-  const addPreset=()=>{
+  const commit=async(next:Settings,close=false)=>{
+    try{setError("");await onSave(next);setDraft(next);if(close)onClose();return true;}
+    catch(e){setError(e instanceof Error?e.message:String(e));return false;}
+  };
+  const addPreset=async()=>{
     if(!character.trim())return setError("캐릭터 이름을 입력해 주세요.");
     if(!choices.length)return setError("보스를 하나 이상 선택해 주세요.");
     if(choices.some(c=>!Number.isInteger(c.party)||c.party<1||c.party>6))return setError("파티원은 1~6명으로 입력해 주세요.");
-    const preset:BossPreset={id:editPresetId??makeId(),characterName:character.trim(),entries:choices};
+    const preset:BossPreset={id:editPresetId??uuid(),characterName:character.trim(),entries:choices};
     const next={...draft,presets:editPresetId?presets.map(p=>p.id===editPresetId?preset:p):[...presets,preset]};
-    setDraft(next);onSave(next);reset();
+    if(await commit(next))reset();
   };
   return <Modal title="메이플스토리 설정" onClose={onClose} wide={tab==="preset"}>
-    <div className="mb-4 flex rounded-xl bg-slate-100 p-1">{([{id:"general",label:"기본 설정"},{id:"preset",label:"캐릭터 보스 프리셋"}] as const).map(t=><button key={t.id} type="button" onClick={()=>setTab(t.id)} className={`flex-1 rounded-lg px-3 py-2 font-bold ${tab===t.id?"bg-white shadow-sm":"text-slate-500"}`}>{t.label}</button>)}</div>
-    {tab==="general"?<div className="space-y-4"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={draft.mvpSilver} onChange={e=>setDraft(p=>({...p,mvpSilver:e.target.checked}))}/> MVP 실버 이상 (경매장 수수료 3%)</label><NumberField label="메소 초기 잔고" value={draft.openingMeso} onChange={v=>setDraft(p=>({...p,openingMeso:v}))}/><p className="text-xs text-slate-500">메획, 도핑, PC방은 거래 입력에서 변경하면 마지막 설정이 유지됩니다.</p><button type="button" className={`${button} w-full bg-blue-600 text-white`} onClick={()=>{if(!valid(draft.openingMeso))return;onSave(draft);onClose();}}>설정 저장</button></div>:<div className="space-y-4">
+    {error&&<p role="alert" className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+     <div className="mb-4 flex rounded-xl bg-slate-100 p-1">{([{id:"general",label:"기본 설정"},{id:"preset",label:"캐릭터 보스 프리셋"}] as const).map(t=><button key={t.id} type="button" onClick={()=>setTab(t.id)} className={`flex-1 rounded-lg px-3 py-2 font-bold ${tab===t.id?"bg-white shadow-sm":"text-slate-500"}`}>{t.label}</button>)}</div>
+    {tab==="general"?<div className="space-y-4"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={draft.mvpSilver} onChange={e=>setDraft(p=>({...p,mvpSilver:e.target.checked}))}/> MVP 실버 이상 (경매장 수수료 3%)</label><NumberField label="메소 초기 잔고" value={draft.openingMeso} onChange={v=>setDraft(p=>({...p,openingMeso:v}))}/><p className="text-xs text-slate-500">메획, 도핑, PC방은 거래 입력에서 변경하면 마지막 설정이 유지됩니다.</p><button type="button" className={`${button} w-full bg-blue-600 text-white`} onClick={()=>{if(!valid(draft.openingMeso))return;void commit(draft,true);}}>설정 저장</button></div>:<div className="space-y-4">
       <p className="text-sm text-slate-600">캐릭터별로 처치하는 보스와 파티 인원을 저장할 수 있어요. 프리셋으로 수익 등록 시 날짜는 오늘이며, 결정을 위한 가격은 bosses.json에서 불러옵니다.</p>
-      {presets.length>0&&<div className="space-y-2">{presets.map(p=><div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 p-3"><div><strong>{p.characterName}</strong><p className="text-xs text-slate-500">선택된 보스 {p.entries.length}개</p></div><div className="flex flex-wrap gap-2"><button className={`${button} bg-blue-600 text-xs text-white`} onClick={()=>onPresetIncome(p)}>오늘 수익 등록</button><button className={`${button} bg-slate-100 text-xs`} onClick={()=>{setEditPresetId(p.id);setCharacter(p.characterName);setChoices(p.entries);setError("");}}>수정</button><button className={`${button} bg-red-50 text-xs text-red-600`} onClick={()=>{if(confirm(`${p.characterName} 프리셋을 삭제할까요?`)){const next={...draft,presets:presets.filter(x=>x.id!==p.id)};setDraft(next);onSave(next);if(editPresetId===p.id)reset();}}}>삭제</button></div></div>)}</div>}
+      {presets.length>0&&<div className="space-y-2">{presets.map(p=><div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 p-3"><div><strong>{p.characterName}</strong><p className="text-xs text-slate-500">선택된 보스 {p.entries.length}개</p></div><div className="flex flex-wrap gap-2"><button className={`${button} bg-blue-600 text-xs text-white`} onClick={()=>onPresetIncome(p)}>오늘 수익 등록</button><button className={`${button} bg-slate-100 text-xs`} onClick={()=>{setEditPresetId(p.id);setCharacter(p.characterName);setChoices(p.entries);setError("");}}>수정</button><button className={`${button} bg-red-50 text-xs text-red-600`} onClick={async()=>{if(confirm(`${p.characterName} 프리셋을 삭제할까요?`)){const next={...draft,presets:presets.filter(x=>x.id!==p.id)};if(await commit(next)&&editPresetId===p.id)reset();}}}>삭제</button></div></div>)}</div>}
       <div className="space-y-3 rounded-2xl bg-slate-50 p-3"><Field label={editPresetId?"캐릭터 프리셋 수정":"새 캐릭터 이름"}><input className={input} value={character} onChange={e=>setCharacter(e.target.value)} placeholder="예: 본캐"/></Field><BossSelector choices={choices} onChange={setChoices}/>{error&&<p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}<div className="flex gap-2"><button className={`${button} bg-blue-600 text-white`} onClick={addPreset}>{editPresetId?"프리셋 수정 저장":"프리셋 추가"}</button>{editPresetId&&<button className={`${button} bg-slate-200`} onClick={reset}>취소</button>}</div></div>
     </div>}
   </Modal>;
 }
 
-function EntryModal({current,related,settings,setSettings,onSave,onClose}:{current?:Transaction;related:Transaction[];settings:Settings;setSettings:(s:Settings)=>void;onSave:(next:Transaction[])=>void;onClose:()=>void}) {
+function EntryModal({current,related,settings,setSettings,onSave,onClose}:{current?:Transaction;related:Transaction[];settings:Settings;setSettings:(s:Settings)=>Promise<void>;onSave:(next:Transaction[])=>Promise<void>;onClose:()=>void}) {
   const [direction,setDirection]=useState<Direction>(current?.direction??"income");
   const [category,setCategory]=useState<Category>(()=>current?.category==="exchange"?"other":current?.category??"boss");
   const [date,setDate]=useState(current?.date??"");
@@ -277,12 +335,12 @@ function EntryModal({current,related,settings,setSettings,onSave,onClose}:{curre
   const npcTotal = npcPrice * quantity;
   const bossTotal=choices.reduce((s,c)=>{const b=bossesData.find(x=>x.id===c.bossId);return s+(b?Math.floor(b.crystalPrice/(c.party||1)):0);},0);
   function changeDirection(next:Direction){setDirection(next);setCategory(next==="income"?"boss":"purchase");setName("");setPrice(0);setError("");}
-  function submit(){
+  async function submit(){
     setError("");
     if(!date)return setError("거래 날짜를 입력해 주세요.");
     if(category==="boss"){
       const reason=validateBosses(choices);if(reason)return setError(reason);
-      const next=groupedBossRows(choices,date,memo);setSettings({...settings,...hunting,pcBang});onSave(next);return;
+      const next=groupedBossRows(choices,date,memo);try{await onSave(next);await setSettings({...settings,...hunting,pcBang});}catch(e){setError(e instanceof Error?e.message:String(e));}return;
     }
     if(!valid(price)||!Number.isInteger(quantity)||quantity<1)return setError("금액은 0 이상의 안전한 정수, 수량은 1 이상의 정수로 입력해 주세요.");
     if(category==="hunting"&&(!valid(hunting.equipment)||hunting.equipment>100||!valid(hunting.ability)||hunting.ability>20||!valid(hunting.union)||hunting.union>15))return setError("메획 범위를 확인해 주세요.");
@@ -295,8 +353,8 @@ function EntryModal({current,related,settings,setSettings,onSave,onClose}:{curre
     if(category==="hunting")amount=hunt.total;
     if(!valid(amount)||amount<1)return setError("계산된 금액을 확인해 주세요.");
     const displayName=category==="hunting"?"사냥 순수익":category==="enhancement"?enhanceType:category==="other"?(name.trim()||CATEGORY_LABELS["other"]):name.trim()||CATEGORY_LABELS[category];
-    const record:Transaction={id:makeId(),currency:"meso",direction,category,date,name:displayName,memo,amount};
-    setSettings({...settings,...hunting,pcBang});onSave([record]);
+    const record:Transaction={id:uuid(),currency:"meso",direction,category,date,name:displayName,memo,amount};
+    try{await onSave([record]);await setSettings({...settings,...hunting,pcBang});}catch(e){setError(e instanceof Error?e.message:String(e));}
   }
   return <Modal title={current?"거래 수정":"새 거래 입력"} onClose={onClose} wide>
     <div className="mb-5 flex rounded-xl bg-slate-100 p-1">{([{id:"income",label:"수익"},{id:"expense",label:"소비"}] as const).map(t=><button type="button" key={t.id} onClick={()=>changeDirection(t.id)} className={`flex-1 rounded-lg py-2 font-bold ${direction===t.id?"bg-white shadow-sm":"text-slate-500"}`}>{t.label}</button>)}</div>

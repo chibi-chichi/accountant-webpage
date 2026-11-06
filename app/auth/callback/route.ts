@@ -1,14 +1,13 @@
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
 
   if (!code) {
     return NextResponse.redirect(
-      `${origin}/test-login?error=missing_code`
+      new URL("/?error=missing_code", url.origin)
     );
   }
 
@@ -18,12 +17,14 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
+    console.error("Auth error:", error.message);
+
     return NextResponse.redirect(
-      `${origin}/test-login?error=auth_failed`
+      new URL("/?error=auth_failed", url.origin)
     );
   }
 
   return NextResponse.redirect(
-    `${origin}/test-login?login=success`
+    new URL("/", url.origin)
   );
 }

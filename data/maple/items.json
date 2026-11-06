@@ -1,0 +1,6 @@
+[
+  {"id":"sol-fragment","name":"솔 에르다 조각","category":"재료","image":"/images/maple/items/sol-fragment.png","keywords":["솔조각","조각"]},
+  {"id":"restraint-ring","name":"리스트레인트 링","category":"시드링","image":"/images/maple/items/restraint-ring.png","keywords":["리레"]},
+  {"id":"juniper","name":"쥬니퍼베리 씨앗","category":"재료","image":"/images/maple/items/juniper.png","keywords":["쥬니퍼"]},
+  {"id":"eternal","name":"에테르넬 장비","category":"장비","image":"/images/maple/items/eternal.png","keywords":["에테르"]}
+]

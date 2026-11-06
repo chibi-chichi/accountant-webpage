@@ -1,0 +1,114 @@
+[
+  {
+    "id": "seren-노말",
+    "name": "세렌",
+    "difficulty": "노말",
+    "crystalPrice": 1000009,
+    "image": "/images/maple/bosses/seren.png"
+  },
+  {
+    "id": "seren-하드",
+    "name": "세렌",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/seren.png"
+  },
+  {
+    "id": "seren-익스트림",
+    "name": "세렌",
+    "difficulty": "익스트림",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/seren.png"
+  },
+  {
+    "id": "kalos-이지",
+    "name": "칼로스",
+    "difficulty": "이지",
+    "crystalPrice": 1110,
+    "image": "/images/maple/bosses/kalos.png"
+  },
+  {
+    "id": "kalos-노말",
+    "name": "칼로스",
+    "difficulty": "노말",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/kalos.png"
+  },
+  {
+    "id": "kalos-카오스",
+    "name": "칼로스",
+    "difficulty": "카오스",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/kalos.png"
+  },
+  {
+    "id": "kalos-익스트림",
+    "name": "칼로스",
+    "difficulty": "익스트림",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/kalos.png"
+  },
+  {
+    "id": "adversary-이지",
+    "name": "대적자",
+    "difficulty": "이지",
+    "crystalPrice": 10000,
+    "image": "/images/maple/bosses/adversary.png"
+  },
+  {
+    "id": "adversary-노말",
+    "name": "대적자",
+    "difficulty": "노말",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/adversary.png"
+  },
+  {
+    "id": "adversary-하드",
+    "name": "대적자",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/adversary.png"
+  },
+  {
+    "id": "adversary-익스트림",
+    "name": "대적자",
+    "difficulty": "익스트림",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/adversary.png"
+  },
+  {
+    "id": "zakum",
+    "name": "자쿰",
+    "difficulty": "카오스",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/zakum.png"
+  },
+  {
+    "id": "lotus",
+    "name": "스우",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/lotus.png"
+  },
+  {
+    "id": "damien",
+    "name": "데미안",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/damien.png"
+  },
+  {
+    "id": "lucid",
+    "name": "루시드",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/lucid.png"
+  },
+  {
+    "id": "will",
+    "name": "윌",
+    "difficulty": "하드",
+    "crystalPrice": 0,
+    "image": "/images/maple/bosses/will.png"
+  }
+]

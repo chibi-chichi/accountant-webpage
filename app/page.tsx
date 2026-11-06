@@ -56,15 +56,14 @@ export default function HomePage() {
     setError(null);
     setWorking(true);
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
 
     if (error) {
       console.error("Google login error:", error.message);
-      alert("로그인에 실패했습니다: " + error.message);
     }
     // On success the browser navigates to Google and back through the auth callback.
   }

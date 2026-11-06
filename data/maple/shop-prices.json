@@ -1,26 +1,38 @@
 [
   {
     "id": "power-elixir",
-    "name": "잡화상인 아이템 예시",
+    "name": "파워 엘릭서",
     "unitPrice": 2500,
-    "image": "/images/maple/items/power-elixir.png"
+    "image": "/images/maple/items/power-elixir.png",
+    "keywords": [
+      "파엘", "파워"
+    ]
   },
   {
     "id": "elixir",
-    "name": "잡화상인 아이템 예시",
+    "name": "엘릭서",
     "unitPrice": 1000,
-    "image": "/images/maple/items/elixir.png"
+    "image": "/images/maple/items/elixir.png",
+    "keywords": [
+      "엘", ""
+    ]
   },
   {
     "id": "reindeer-milk",
-    "name": "잡화상인 아이템 예시",
+    "name": "순록의 우유",
     "unitPrice": 2750,
-    "image": "/images/maple/items/reindeer-milk.png"
+    "image": "/images/maple/items/reindeer-milk.png",
+    "keywords": [
+      "순록"
+    ]
   },
-  {
+  { 
     "id": "dawn-dew",
-    "name": "잡화상인 아이템 예시",
+    "name": "황혼의 이슬",
     "unitPrice": 5100,
-    "image": "/images/maple/items/dawn-dew.png"
+    "image": "/images/maple/items/dawn-dew.png",
+    "keywords": [
+      "황혼"
+    ]
   }
 ]
